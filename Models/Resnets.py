@@ -127,6 +127,14 @@ def cifar_resnet20(block_type='original', shortcut_type='A', l2_reg=1e-4, load_w
     return model
 
 
+def cifar_resnet20_int16(block_type='original', shortcut_type='A', l2_reg=1e-4, load_weights=False):
+    model = Resnet(input_shape=(32, 32, 3), n_classes=10, l2_reg=l2_reg, group_sizes=(3, 3, 3), features=(16, 32, 64),
+                   strides=(1, 2, 2), first_conv={"filters": 16, "kernel_size": 3, "strides": 1}, shortcut_type=shortcut_type, 
+                   block_type=block_type, preact_shortcuts=False)
+    if load_weights: model = load_weights_func(model, 'cifar_resnet20_int16')
+    return model
+
+
 def cifar_resnet32(block_type='original', shortcut_type='A', l2_reg=1e-4, load_weights=False):
     model = Resnet(input_shape=(32, 32, 3), n_classes=10, l2_reg=l2_reg, group_sizes=(5, 5, 5), features=(16, 32, 64),
                    strides=(1, 2, 2), first_conv={"filters": 16, "kernel_size": 3, "strides": 1}, shortcut_type=shortcut_type, 
