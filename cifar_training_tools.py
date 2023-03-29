@@ -17,21 +17,21 @@ def cifar_training(model, logdir, run_name, lr_values=[0.01, 0.1, 0.01, 0.001], 
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     ds = tfds.load('cifar10', as_supervised=True, in_memory=True)
-    std = tf.reshape((0.2023, 0.1994, 0.2010), shape=(1, 1, 3))
-    mean= tf.reshape((0.4914, 0.4822, 0.4465), shape=(1, 1, 3))
-    
+    std = tf.reshape(np.array([16101, 15798, 14631], dtype='int16'), shape=(1, 1, 3))
+    mean= tf.reshape(np.array([8094, 7978, 8571], dtype='int16'), shape=(1, 1, 3))
+
     def train_prep(x, y):
-        x = tf.cast(x, tf.float32)/255.
+        x = tf.cast(x, tf.int16)/255*32767
         x = tf.image.random_flip_left_right(x)
         x = tf.image.pad_to_bounding_box(x, 4, 4, 40, 40)
         x = tf.image.random_crop(x, (32, 32, 3))
-        x = (x - mean) / std
-        return x, y
+        x = (tf.cast(x, tf.int16) - mean) / std
+        return tf.cast(x, tf.int16), y
 
     def valid_prep(x, y):
-        x = tf.cast(x, tf.float32)/255.
-        x = (x - mean) / std
-        return x, y
+        x = tf.cast(x, tf.int16)/255*32767
+        x = (tf.cast(x, tf.int16) - mean) / std
+        return tf.cast(x, tf.int16), y
 
     ds['train'] = ds['train'].map(train_prep).shuffle(10000).repeat().batch(batch_size).prefetch(-1)
     ds['test'] = ds['test'].map(valid_prep).batch(batch_size*4).prefetch(-1)
@@ -108,21 +108,21 @@ def cifar_error_test(model, tr_len=20, vd_len=2):
     optimizer = tf.keras.optimizers.SGD(0.01)
 
     ds = tfds.load('cifar10', as_supervised=True, in_memory=True)
-    std = tf.reshape((0.2023, 0.1994, 0.2010), shape=(1, 1, 3))
-    mean= tf.reshape((0.4914, 0.4822, 0.4465), shape=(1, 1, 3))
-    
+    std = tf.reshape(np.array([16101, 15798, 14631], dtype='int16'), shape=(1, 1, 3))
+    mean= tf.reshape(np.array([8094, 7978, 8571], dtype='int16'), shape=(1, 1, 3))
+
     def train_prep(x, y):
-        x = tf.cast(x, tf.float32)/255.
+        x = tf.cast(x, tf.int16)/255*32767
         x = tf.image.random_flip_left_right(x)
         x = tf.image.pad_to_bounding_box(x, 4, 4, 40, 40)
         x = tf.image.random_crop(x, (32, 32, 3))
-        x = (x - mean) / std
-        return x, y
+        x = (tf.cast(x, tf.int16) - mean) / std
+        return tf.cast(x, tf.int16), y
 
     def valid_prep(x, y):
-        x = tf.cast(x, tf.float32)/255.
-        x = (x - mean) / std
-        return x, y
+        x = tf.cast(x, tf.int16)/255*32767
+        x = (tf.cast(x, tf.int16) - mean) / std
+        return tf.cast(x, tf.int16), y
 
     ds['train'] = ds['train'].map(train_prep).batch(5).take(tr_len).prefetch(-1)
     ds['test'] = ds['test'].map(valid_prep).batch(5).take(vd_len).prefetch(-1)
